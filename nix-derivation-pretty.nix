@@ -14,6 +14,7 @@ mkDerivation {
     pretty-show prettyprinter prettyprinter-ansi-terminal protolude
     system-filepath text vector
   ];
+  enableSharedExecutables = false;
   executableHaskellDepends = [ base ];
   homepage = "https://github.com/pbogdan/nix-derivation-pretty";
   description = "Pretty printer for Nix derivations";
