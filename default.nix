@@ -8,7 +8,7 @@ in nixpkgs
    .haskell
    .packages
    .${compiler}
-   .callPackage ./nix-derivation-pretty.nix {
+   .callPackage ./nix-derivation-pretty.nix rec {
      nix-derivation = nixpkgs
                       .pkgs
                       .haskell
@@ -26,5 +26,5 @@ in nixpkgs
                      .haskell
                      .packages
                      .${compiler}
-                     .callPackage ./deps/prettyprinter-ansi-terminal.nix { };
+                     .callPackage ./deps/prettyprinter-ansi-terminal.nix { inherit prettyprinter; };
 }
