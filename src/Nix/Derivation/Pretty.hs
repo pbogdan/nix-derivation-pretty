@@ -31,6 +31,7 @@ import           Nix.Derivation.Pretty.Opts
 import           Nix.Derivation.Pretty.Orphans ()
 import           Text.Show.Pretty (ppShow)
 
+
 defaultMain :: IO ()
 defaultMain = do
   Options s (WrapWidth w) p <- parseOptions
@@ -49,11 +50,11 @@ ppDrv p s w = do
         Human -> putDoc (prettyDerivationHuman (toS p) r)
     Fail _ _ err -> putText $ "Parsing failed: " <> toS err
 
-prettyPath :: FilePath -> Doc ann
-prettyPath =  pretty . Text.drop (Text.length "Filepath ") . show
+prettyPath :: FilePath -> Text
+prettyPath = Text.drop (Text.length "Filepath ") . show
 
-prettyText :: Text -> Doc ann
-prettyText t = pretty ("\"" :: Text) <> pretty t <> pretty ("\"" :: Text)
+prettyText :: Text -> Text
+prettyText = show
 
 prettyOutputs :: Map Text DerivationOutput -> Doc ann
 prettyOutputs =
@@ -66,6 +67,7 @@ prettyOutputs =
        , prettyText . hash $out)) .
   Map.toList
 
+
 prettyInputDrvs :: Map FilePath (Set Text) -> Doc ann
 prettyInputDrvs =
   prettyList . map (prettyPath *** map prettyText . Set.toList) . Map.toList
@@ -74,10 +76,10 @@ prettyInputSrcs :: Set FilePath -> Doc ann
 prettyInputSrcs = prettyList . map prettyPath . Set.toList
 
 prettyPlatform :: Text -> Doc ann
-prettyPlatform = prettyText
+prettyPlatform = pretty . prettyText
 
 prettyBuilder :: Text -> Doc ann
-prettyBuilder = prettyText
+prettyBuilder = pretty . prettyText
 
 prettyArgs :: Vec.Vector Text -> Doc ann
 prettyArgs = prettyList . map prettyText . Vec.toList
@@ -88,15 +90,15 @@ prettyEnv = pretty . map (prettyText *** prettyText) . Map.toList
 prettyDerivation :: Derivation -> Doc ann
 prettyDerivation drv =
   "Derive" <+>
-  (tupled
-     ([ prettyOutputs (outputs drv)
-      , prettyInputDrvs (inputDrvs drv)
-      , prettyInputSrcs (inputSrcs drv)
-      , prettyPlatform (platform drv)
-      , prettyBuilder (builder drv)
-      , prettyArgs (args drv)
-      , prettyEnv (env drv)
-      ]))
+  tupled
+    [ prettyOutputs (outputs drv)
+    , prettyInputDrvs (inputDrvs drv)
+    , prettyInputSrcs (inputSrcs drv)
+    , prettyPlatform (platform drv)
+    , prettyBuilder (builder drv)
+    , prettyArgs (args drv)
+    , prettyEnv (env drv)
+    ]
 
 prettyDerivationHs :: Derivation -> String
 prettyDerivationHs = ppShow
@@ -113,7 +115,7 @@ prettyDerivationHuman p drv =
      line <+>
      bold "input sources:" <+>
      line <+>
-     humanList (map prettyPath . Set.toList . inputSrcs $ drv) <+>
+     humanList (map (pretty . prettyPath) . Set.toList . inputSrcs $ drv) <+>
      line <+>
      bold "builder:" <+>
      (pretty . builder $ drv) <+>
@@ -130,7 +132,7 @@ prettyDerivationHuman p drv =
       drv))
 
 humanList :: [Doc ann] -> Doc ann
-humanList = align . sep . zipWith (<+>) (repeat " ")
+humanList = align . sep . map (" " <+>)
 
 humanOutputs :: Derivation -> Doc AnsiTerminal
 humanOutputs drv =
@@ -141,16 +143,15 @@ humanOutputs drv =
        , humanList
            [ pretty ("hash: " <> hash out)
            , pretty ("hash algo: " <> hashAlgo out)
-           , pretty ("input deriviations: " :: Text)
-           , humanList . map prettyPath . Set.toList $
+           , pretty ("input derivations: " :: Text)
+           , humanList . map (pretty . prettyPath) . Set.toList $
              inputDrvsForOutput drv name
            ]
        ]) .
   Map.toList . outputs $
   drv
 
-
 inputDrvsForOutput :: Derivation -> Text -> Set FilePath
 inputDrvsForOutput drv out =
   let ins = inputDrvs drv
-  in Set.fromList . Map.keys . Map.filter (\x -> Set.member out x) $ ins
+  in Set.fromList . Map.keys . Map.filter (Set.member out) $ ins
