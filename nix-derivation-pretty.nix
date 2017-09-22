@@ -1,7 +1,7 @@
-{ mkDerivation, attoparsec, base, containers, nix-derivation
-, optparse-applicative, pretty-show, prettyprinter
-, prettyprinter-ansi-terminal, protolude, stdenv, system-filepath
-, text, vector
+{ mkDerivation, attoparsec, base, bifunctors, containers, extra
+, nix-derivation, optparse-applicative, pretty-show, prettyprinter
+, prettyprinter-ansi-terminal, protolude, shell-cmd, stdenv
+, system-filepath, temporary, text, vector
 }:
 mkDerivation {
   pname = "nix-derivation-pretty";
@@ -10,11 +10,11 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    attoparsec base containers nix-derivation optparse-applicative
-    pretty-show prettyprinter prettyprinter-ansi-terminal protolude
-    system-filepath text vector
+    attoparsec base bifunctors containers extra nix-derivation
+    optparse-applicative pretty-show prettyprinter
+    prettyprinter-ansi-terminal protolude shell-cmd system-filepath
+    temporary text vector
   ];
-  enableSharedExecutables = false;
   executableHaskellDepends = [ base ];
   homepage = "https://github.com/pbogdan/nix-derivation-pretty";
   description = "Pretty printer for Nix derivations";
