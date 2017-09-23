@@ -39,9 +39,9 @@ import           Text.Show.Pretty (ppShow)
 
 defaultMain :: IO ()
 defaultMain = do
-  Options s (WrapWidth w) drvs@(Drvs p1 p2) <- parseOptions
+  Options s drvs@(Drvs p1 p2) <- parseOptions
   drvsOrErr <-
-    bisequence <$> (bisequence . bimap (ppDrv s w) (ppDrv s w) $ drvs)
+    bisequence <$> (bisequence . bimap (ppDrv s) (ppDrv s) $ drvs)
   case drvsOrErr of
     Left e -> do
       putText $ "Pretty printing failed: " <> e
@@ -59,8 +59,8 @@ defaultMain = do
           Text.replace "@t2@" (toS . fromMaybe "" $ p2) $
           diff
 
-ppDrv :: Style -> Int -> Protolude.FilePath -> IO (Either Text Text)
-ppDrv s _w p = do
+ppDrv :: Style -> Protolude.FilePath -> IO (Either Text Text)
+ppDrv s p = do
   text <- LText.readFile p
   let result = parse parseDerivation text
   case result of
