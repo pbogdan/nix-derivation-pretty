@@ -1,5 +1,6 @@
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP                 #-}
+{-# LANGUAGE NoImplicitPrelude   #-}
+{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Nix.Derivation.Pretty
@@ -103,38 +104,49 @@ prettyDerivation drv =
 prettyDerivationHs :: Derivation -> String
 prettyDerivationHs = ppShow
 
+#if MIN_VERSION_prettyprinter_ansi_terminal(1,1,0)
+prettyDerivationHuman :: Text -> Derivation -> Doc AnsiStyle
+#else
 prettyDerivationHuman :: Text -> Derivation -> Doc AnsiTerminal
+#endif
 prettyDerivationHuman p drv =
-  (bold . pretty $ (p <> ":")) <+>
+  ann bold (pretty (p <> ":")) <+>
   line <+>
   line <+>
   align
-    (bold " outputs:" <+>
+    (ann bold " outputs:" <+>
      line <+>
      humanOutputs drv <+>
      line <+>
-     bold "input sources:" <+>
+     ann bold "input sources:" <+>
      line <+>
      humanList (map (pretty . prettyPath) . Set.toList . inputSrcs $ drv) <+>
      line <+>
-     bold "builder:" <+>
+     ann bold "builder:" <+>
      (pretty . builder $ drv) <+>
      line <+>
-     bold "builder args: " <+>
+     ann bold "builder args: " <+>
      line <+>
      (humanList . map pretty . Vec.toList . args $ drv) <+>
      line <+>
-     bold "environment:" <+>
+     ann bold "environment:" <+>
      line <+>
      (humanList .
       map (\(k, v) -> pretty (k <> ":") <+> line <+> (indent 3 . pretty $ v)) .
       Map.toList . env $
       drv))
+  where
+#if MIN_VERSION_prettyprinter_ansi_terminal(1,1,0)
+    ann = annotate
+#else
+    ann = identity
+#endif
+
 
 humanList :: [Doc ann] -> Doc ann
 humanList = align . sep . map (" " <+>)
 
-humanOutputs :: Derivation -> Doc AnsiTerminal
+humanOutputs :: Derivation -> Doc ann
 humanOutputs drv =
   humanList .
   concatMap
