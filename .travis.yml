@@ -1,5 +1,6 @@
 language: nix
 sudo: true
 script:
-- nix-build -Q
-- nix-build --argstr pkgs https://nixos.org/channels/nixos-unstable/nixexprs.tar.xz -Q
+- nix-build -I nixpkgs=https://github.com/nixos/nixpkgs/archive/2e983f14f6.tar.gz -Q
+- nix-build -I nixpkgs=https:///nixos.org/channels/nixos-17.09/nixexprs.tar.xz -Q
+- nix-build -I nixpkgs=https:///nixos.org/channels/nixos-unstable/nixexprs.tar.xz -Q
