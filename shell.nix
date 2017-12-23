@@ -1,2 +1,2 @@
-{ pkgs ? null, compiler ? "ghc802" }:
+{ pkgs ? null, compiler ? null }:
 (import ./default.nix { inherit pkgs compiler; }).env

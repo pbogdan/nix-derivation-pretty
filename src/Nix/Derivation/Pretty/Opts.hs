@@ -9,10 +9,12 @@ module Nix.Derivation.Pretty.Opts
   , parseOptions
   ) where
 
-import Protolude
+import           Protolude
 
-import GHC.Show
-import Options.Applicative
+import qualified Data.Text as Text
+import           GHC.Show
+import           Options.Applicative (Parser, ParserInfo, ReadM)
+import qualified Options.Applicative as Options
 
 data Style
   = Pretty
@@ -28,7 +30,7 @@ instance GHC.Show.Show WrapWidth where
   show (WrapWidth x) = GHC.Show.show x
 
 parseWrapWidth :: ReadM WrapWidth
-parseWrapWidth = eitherReader $ \s -> case readEither s of
+parseWrapWidth = Options.eitherReader $ \s -> case readEither s of
   Left err -> Left err
   Right x -> Right . WrapWidth $ x
 
@@ -40,28 +42,35 @@ data Options =
 
 style :: Parser Style
 style =
-  flag'
+  Options.flag'
     Haskell
-    (long "haskell" <>
-     help "Pretty print haskell data type representing the derivation") <|>
-  flag' Human (long "human" <> help "Pretty print more human friendly output") <|>
+    (Options.long "haskell" <>
+     Options.help "Pretty print haskell data type representing the derivation") <|>
+  Options.flag'
+    Human
+    (Options.long "human" <>
+     Options.help "Pretty print more human friendly output") <|>
   pure Pretty
 
 width :: Parser WrapWidth
 width =
-  option
+  Options.option
     parseWrapWidth
-    (short 'w' <> long "width" <> help "Column to wrap the output at" <>
-     showDefault <>
-     value 80 <>
-     metavar "int")
+    (Options.short 'w' <> Options.long "width" <>
+     Options.help "Column to wrap the output at" <>
+     Options.showDefault <>
+     Options.value 80 <>
+     Options.metavar "int")
 
 options :: Parser Options
 options =
-  Options <$> style <*> width <*> (toS <$> argument str (metavar "file"))
+  Options <$> style <*> width <*>
+  (Text.pack <$> Options.argument Options.str (Options.metavar "file"))
 
 withInfo :: Parser a -> Text -> ParserInfo a
-withInfo opts desc = info (helper <*> opts) $ progDesc (toS desc)
+withInfo opts desc =
+  Options.info (Options.helper <*> opts) $ Options.progDesc (toS desc)
 
 parseOptions :: IO Options
-parseOptions = execParser (options `withInfo` "Pretty print a Nix derivation.")
+parseOptions =
+  Options.execParser (options `withInfo` "Pretty print a Nix derivation.")
