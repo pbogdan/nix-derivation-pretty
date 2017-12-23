@@ -1,4 +1,4 @@
-{ pkgs ? null, compiler ? "ghc802" }:
+{ pkgs ? null, compiler ? null}:
 let nixpkgs = if pkgs == null then
               import ((import <nixpkgs> {}).fetchFromGitHub {
                 owner = "NixOS";
@@ -8,10 +8,8 @@ let nixpkgs = if pkgs == null then
              }) {}
              else
              import <nixpkgs> {};
-in
-nixpkgs
- .pkgs
- .haskell
- .packages
- .${compiler}
- .callPackage ./nix-derivation-pretty.nix rec { }
+    hsPkgSet = if compiler == null then
+               nixpkgs.haskellPackages
+               else
+               nixpkgs.haskell.packages.${compiler};
+in hsPkgSet.callPackage ./nix-derivation-pretty.nix rec { }

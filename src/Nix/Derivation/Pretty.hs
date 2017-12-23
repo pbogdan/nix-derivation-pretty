@@ -22,12 +22,17 @@ import           Data.String (String)
 import           Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.Lazy.IO as LText
-import           Data.Text.Prettyprint.Doc
+import           Data.Text.Prettyprint.Doc (Doc, align, indent, line , pretty
+                                           , prettyList, sep, tupled , (<+>))
+#if MIN_VERSION_prettyprinter_ansi_terminal(1,1,0)
+import           Data.Text.Prettyprint.Doc (annotate)
+#endif
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Text.Prettyprint.Doc.Util
 import qualified Data.Vector as Vec
 import           Filesystem.Path (FilePath)
-import           Nix.Derivation
+import           Nix.Derivation (Derivation, DerivationOutput)
+import qualified Nix.Derivation as Drv
 import           Nix.Derivation.Pretty.Opts
 import           Nix.Derivation.Pretty.Orphans ()
 import           Text.Show.Pretty (ppShow)
@@ -41,7 +46,7 @@ defaultMain = do
 ppDrv :: Protolude.FilePath -> Style -> Int -> IO ()
 ppDrv p s w = do
   text <- LText.readFile p
-  let result = parse parseDerivation text
+  let result = parse Drv.parseDerivation text
   case result of
     Done _ r -> do
       let doc = prettyDerivation r
@@ -63,9 +68,9 @@ prettyOutputs =
   map
     (\(name, out) ->
        ( prettyText name
-       , prettyPath . path $ out
-       , prettyText . hashAlgo $ out
-       , prettyText . hash $out)) .
+       , prettyPath . Drv.path $ out
+       , prettyText . Drv.hashAlgo $ out
+       , prettyText . Drv.hash $out)) .
   Map.toList
 
 
@@ -92,13 +97,13 @@ prettyDerivation :: Derivation -> Doc ann
 prettyDerivation drv =
   "Derive" <+>
   tupled
-    [ prettyOutputs (outputs drv)
-    , prettyInputDrvs (inputDrvs drv)
-    , prettyInputSrcs (inputSrcs drv)
-    , prettyPlatform (platform drv)
-    , prettyBuilder (builder drv)
-    , prettyArgs (args drv)
-    , prettyEnv (env drv)
+    [ prettyOutputs (Drv.outputs drv)
+    , prettyInputDrvs (Drv.inputDrvs drv)
+    , prettyInputSrcs (Drv.inputSrcs drv)
+    , prettyPlatform (Drv.platform drv)
+    , prettyBuilder (Drv.builder drv)
+    , prettyArgs (Drv.args drv)
+    , prettyEnv (Drv.env drv)
     ]
 
 prettyDerivationHs :: Derivation -> String
@@ -120,20 +125,20 @@ prettyDerivationHuman p drv =
      line <+>
      ann bold "input sources:" <+>
      line <+>
-     humanList (map (pretty . prettyPath) . Set.toList . inputSrcs $ drv) <+>
+     humanList (map (pretty . prettyPath) . Set.toList . Drv.inputSrcs $ drv) <+>
      line <+>
      ann bold "builder:" <+>
-     (pretty . builder $ drv) <+>
+     (pretty . Drv.builder $ drv) <+>
      line <+>
      ann bold "builder args: " <+>
      line <+>
-     (humanList . map pretty . Vec.toList . args $ drv) <+>
+     (humanList . map pretty . Vec.toList . Drv.args $ drv) <+>
      line <+>
      ann bold "environment:" <+>
      line <+>
      (humanList .
       map (\(k, v) -> pretty (k <> ":") <+> line <+> (indent 3 . pretty $ v)) .
-      Map.toList . env $
+      Map.toList . Drv.env $
       drv))
   where
 #if MIN_VERSION_prettyprinter_ansi_terminal(1,1,0)
@@ -153,17 +158,17 @@ humanOutputs drv =
     (\(name, out) ->
        [ pretty ("name: " <> name)
        , humanList
-           [ pretty ("hash: " <> hash out)
-           , pretty ("hash algo: " <> hashAlgo out)
+           [ pretty ("hash: " <> Drv.hash out)
+           , pretty ("hash algo: " <> Drv.hashAlgo out)
            , pretty ("input derivations: " :: Text)
            , humanList . map (pretty . prettyPath) . Set.toList $
              inputDrvsForOutput drv name
            ]
        ]) .
-  Map.toList . outputs $
+  Map.toList . Drv.outputs $
   drv
 
 inputDrvsForOutput :: Derivation -> Text -> Set FilePath
 inputDrvsForOutput drv out =
-  let ins = inputDrvs drv
+  let ins = Drv.inputDrvs drv
   in Set.fromList . Map.keys . Map.filter (Set.member out) $ ins
