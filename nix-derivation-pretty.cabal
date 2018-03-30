@@ -7,13 +7,17 @@ license-file: LICENSE
 copyright: Copyright Piotr Bogdan (c) 2017
 maintainer: ppbogdan@gmail.com
 homepage: https://github.com/pbogdan/nix-derivation-pretty
-synopsis: Pretty printer for Nix derivations.
-description:
+synopsis:
     Pretty printer for Nix derivations.
+description:
+    Pretty printer for Nix derivations. Please see README.md for usage instructions.
 category: System
 author: Piotr Bogdan
 extra-source-files:
     README.md
+source-repository head
+  type:     git
+  location: https://github.com/pbogdan/nix-derivation-pretty.git
 
 library
     exposed-modules:
