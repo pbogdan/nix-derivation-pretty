@@ -3,8 +3,8 @@ let nixpkgs = if pkgs == null then
               import ((import <nixpkgs> {}).fetchFromGitHub {
                 owner = "NixOS";
                 repo = "nixpkgs";
-                rev = "2e983f14f6";
-                sha256 = "0rm5kb8l27kb2bac95zqc18v50065iix83sv3l0v9wpkq7421cby";
+                rev = "b6ddb9913f2";
+                sha256 = "1yjbd5jhjgirv7ki0sms1x13dqyjzg0rpb7n67m6ik61fmpq0nfw";
              }) {}
              else
              import <nixpkgs> {};
