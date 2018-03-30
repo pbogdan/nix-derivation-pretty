@@ -12,6 +12,8 @@ description:
     Pretty printer for Nix derivations.
 category: System
 author: Piotr Bogdan
+extra-source-files:
+    README.md
 
 library
     exposed-modules:
