@@ -12,4 +12,16 @@ let nixpkgs = if pkgs == null then
                nixpkgs.haskellPackages
                else
                nixpkgs.haskell.packages.${compiler};
-in hsPkgSet.callPackage ./nix-derivation-pretty.nix rec { }
+    pkg = hsPkgSet.callPackage ./nix-derivation-pretty.nix rec { };
+in
+    with nixpkgs.haskell.lib;
+    overrideCabal pkg (drv: {
+      enableSharedExecutables = false;
+      postInstall = ''
+        exe=$out/bin/pp-drv
+        mkdir -p $out/share/{bash-completion/completions,zsh/vendor-completions,fish/completions}
+        $exe --bash-completion-script $exe >$out/share/bash-completion/completions/pp-drv
+        $exe --zsh-completion-script $exe >$out/share/zsh/vendor-completions/_pp-drv
+        $exe --fish-completion-script $exe >$out/share/fish/completions/pp-drv.fish
+      '';
+    })
