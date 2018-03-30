@@ -65,7 +65,10 @@ width =
 options :: Parser Options
 options =
   Options <$> style <*> width <*>
-  (Text.pack <$> Options.argument Options.str (Options.metavar "file"))
+  (Text.pack <$>
+   Options.argument
+     Options.str
+     (Options.metavar "file" <> Options.action "file"))
 
 withInfo :: Parser a -> Text -> ParserInfo a
 withInfo opts desc =
