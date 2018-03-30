@@ -15,6 +15,7 @@ import qualified Protolude (FilePath)
 import           Protolude hiding (FilePath)
 
 import           Control.Arrow ((***))
+import           Data.Aeson.Encode.Pretty
 import           Data.Attoparsec.Text.Lazy
 import qualified Data.Map as Map
 import qualified Data.Set as Set
@@ -33,6 +34,7 @@ import qualified Data.Vector as Vec
 import           Filesystem.Path (FilePath)
 import           Nix.Derivation (Derivation, DerivationOutput)
 import qualified Nix.Derivation as Drv
+import           Nix.Derivation.Pretty.JSON
 import           Nix.Derivation.Pretty.Opts
 import           Nix.Derivation.Pretty.Orphans ()
 import           Text.Show.Pretty (ppShow)
@@ -54,6 +56,7 @@ ppDrv p s w = do
         Pretty -> putDocW w doc
         Haskell -> putText . toS . prettyDerivationHs $ r
         Human -> putDoc (prettyDerivationHuman (toS p) r)
+        JSON -> putText . toS . prettyDerivationJSON $ r
     Fail _ _ err -> putText $ "Parsing failed: " <> toS err
 
 prettyPath :: FilePath -> Text
@@ -108,6 +111,9 @@ prettyDerivation drv =
 
 prettyDerivationHs :: Derivation -> String
 prettyDerivationHs = ppShow
+
+prettyDerivationJSON :: Derivation -> String
+prettyDerivationJSON = toS . encodePretty . toJSONDerivation
 
 #if MIN_VERSION_prettyprinter_ansi_terminal(1,1,0)
 prettyDerivationHuman :: Text -> Derivation -> Doc AnsiStyle

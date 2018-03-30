@@ -20,6 +20,7 @@ data Style
   = Pretty
   | Haskell
   | Human
+  | JSON
   deriving (Eq, Show)
 
 newtype WrapWidth =
@@ -50,6 +51,10 @@ style =
     Human
     (Options.long "human" <>
      Options.help "Pretty print more human friendly output") <|>
+  Options.flag'
+    JSON
+    (Options.long "json" <>
+     Options.help "Pretty print JSON output") <|>
   pure Pretty
 
 width :: Parser WrapWidth
