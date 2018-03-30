@@ -5,17 +5,16 @@ Pretty printer for Nix derivations built on top of [nix-derivation](https://hack
 ## Usage
 
 ```
-$ pp-drv ([--haskell] | [--human]) [-w|--width int] file
-
+$ pp-drv ([--haskell] | [--human] | [--json]) [-w|--width int] file
 ```
 
 Pretty print a Nix derivation.
 
 Available options:
-
 - `-h,--help`                Show this help text
 - `--haskell`                Pretty print haskell data type representing the derivation
 - `--human`                  Pretty print more human friendly output
+- `--json`                   Pretty print JSON output
 - `-w,--width int`           Column to wrap the output at (default: 80)
 
 ## Installation.
